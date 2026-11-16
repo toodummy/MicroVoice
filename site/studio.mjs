@@ -1,7 +1,7 @@
 import { generateAudio } from "./synthesis.mjs?v=3";
 import { detectLanguage } from "./detect-language.mjs";
 import { MAX_TEXT_LENGTH } from "./text-settings.mjs";
-import { createStudioMotion } from "./motion.mjs";
+import { createStudioMotion } from "./motion.mjs?v=2";
 
 const get = (id) => document.getElementById(id);
 const languages = await (async () => {
@@ -83,6 +83,12 @@ function drawWave() {
     const height = peaks ? Math.max(3, Math.sqrt(peaks[i]) * 69) : 5;
     ctx.fillStyle = peaks ? (i < played ? "#fff0cc" : "#f8c775") : "#565967";
     ctx.fillRect(11 + i * gap, mid - height / 2, Math.max(1.1, gap * 0.53), height);
+  }
+  if (peaks && progress > 0 && progress < 1) {
+    const head = 11 + progress * (width - 22);
+    ctx.fillStyle = "#ffab9a";
+    ctx.fillRect(head, 6, 1.5, height - 12);
+    ctx.fillRect(head - 1.5, 6, 4.5, 3);
   }
 }
 function parseWave(wav) {
