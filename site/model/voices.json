@@ -1,0 +1,52 @@
+{
+  "en": {
+    "name": "English",
+    "example": "The last train had already left. But then a light flickered on at the end of the platform, and someone called her name.",
+    "voices": {"studio": "Studio · Narrator", "grace": "Grace", "iris": "Iris", "otis": "Otis", "vincent": "Vincent"}
+  },
+  "ru": {
+    "name": "Russian · Русский",
+    "example": "Последний поезд уже ушёл. Вдруг на другом конце платформы вспыхнул свет, и кто-то позвал её по имени.",
+    "voices": {"studio": "Studio · Рассказчик", "anastasia": "Анастасия", "natasha": "Наташа", "dmitri": "Дмитрий", "ivan": "Иван"}
+  },
+  "es": {
+    "name": "Spanish · Español",
+    "example": "El último tren ya se había ido. De pronto, se encendió una luz al final del andén.",
+    "voices": {"lucia": "Lucía", "javier": "Javier"}
+  },
+  "fr": {
+    "name": "French · Français",
+    "example": "Le dernier train était déjà parti. Soudain, une lumière s’est allumée au bout du quai.",
+    "voices": {"camille": "Camille", "louis": "Louis"}
+  },
+  "de": {
+    "name": "German · Deutsch",
+    "example": "Der letzte Zug war schon abgefahren. Plötzlich ging am Ende des Bahnsteigs ein Licht an.",
+    "voices": {"lena": "Lena", "jonas": "Jonas"}
+  },
+  "zh": {
+    "name": "Mandarin · 普通话",
+    "example": "末班列车已经开走了。突然，站台尽头亮起了一盏灯。",
+    "voices": {"huayan": "HuaYan"}
+  },
+  "ja": {
+    "name": "Japanese · 日本語",
+    "example": "終電はもう出たあとだった。突然、ホームの端で明かりがともった。",
+    "voices": {"yuki": "Yuki", "haruto": "Haruto"}
+  },
+  "ko": {
+    "name": "Korean · 한국어",
+    "example": "막차는 이미 떠난 뒤였다. 갑자기 승강장 끝에서 불이 켜졌다.",
+    "voices": {"seoyeon": "Seoyeon", "minjun": "Minjun"}
+  },
+  "it": {
+    "name": "Italian · Italiano",
+    "example": "L’ultimo treno era già partito. All’improvviso si accese una luce in fondo al binario.",
+    "voices": {"giulia": "Giulia", "marco": "Marco"}
+  },
+  "pt": {
+    "name": "Brazilian Portuguese · Português",
+    "example": "O último trem já tinha partido. De repente, uma luz se acendeu no fim da plataforma.",
+    "voices": {"beatriz": "Beatriz", "rafael": "Rafael"}
+  }
+}
