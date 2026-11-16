@@ -1,6 +1,7 @@
 import { generateAudio } from "./synthesis.mjs?v=2";
 import { detectLanguage } from "./detect-language.mjs";
 import { MAX_TEXT_LENGTH } from "./text-settings.mjs";
+import { createStudioMotion } from "./motion.mjs";
 
 const get = (id) => document.getElementById(id);
 const languages = await (async () => {
@@ -32,6 +33,7 @@ const download = get("save-wave");
 let peaks;
 let audioURL;
 let inProgress = false;
+const motion = createStudioMotion(player, () => peaks);
 
 function setStatus(message, error = false) {
   get("status").textContent = message;
@@ -64,17 +66,22 @@ function drawWave() {
   const ctx = canvas.getContext("2d");
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height || !ctx) return;
-  const scale = window.devicePixelRatio || 1;
+  const scale = Math.min(2, window.devicePixelRatio || 1);
   const { width, height } = rect;
-  canvas.width = Math.round(width * scale);
-  canvas.height = Math.round(height * scale);
-  ctx.scale(scale, scale);
+  const rasterWidth = Math.round(width * scale);
+  const rasterHeight = Math.round(height * scale);
+  if (canvas.width !== rasterWidth) canvas.width = rasterWidth;
+  if (canvas.height !== rasterHeight) canvas.height = rasterHeight;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.clearRect(0, 0, width, height);
   const mid = height / 2;
   const count = peaks?.length || 76;
   const gap = (width - 22) / count;
+  const progress = player.duration > 0 ? player.currentTime / player.duration : 0;
+  const played = Math.min(count, Math.floor(progress * count));
   for (let i = 0; i < count; i++) {
     const height = peaks ? Math.max(3, Math.sqrt(peaks[i]) * 69) : 5;
-    ctx.fillStyle = peaks ? "#f8c775" : "#565967";
+    ctx.fillStyle = peaks ? (i < played ? "#fff0cc" : "#f8c775") : "#565967";
     ctx.fillRect(11 + i * gap, mid - height / 2, Math.max(1.1, gap * 0.53), height);
   }
 }
@@ -101,6 +108,7 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (generate.disabled) return;
   inProgress = true;
+  motion.setWorking(true);
   updateControls();
   setStatus("Generating speech on your CPU…");
   const start = performance.now();
@@ -119,10 +127,12 @@ form.addEventListener("submit", async (event) => {
     peaks = audio.peaks;
     drawWave();
     setStatus("Audio ready.");
+    motion.ready();
   } catch (error) {
     setStatus(error.message || "Could not generate audio.", true);
   } finally {
     inProgress = false;
+    motion.setWorking(false);
     updateControls();
   }
 });
@@ -202,4 +212,7 @@ get("profile-file").addEventListener("change", async ({ currentTarget }) => {
 });
 lang.replaceChildren(...Object.entries(languages).map(([code, language]) => new Option(language.name, code)));
 loadVoices();
+for (const event of ["loadedmetadata", "timeupdate", "seeked", "ended"]) {
+  player.addEventListener(event, drawWave);
+}
 new ResizeObserver(drawWave).observe(canvas);

@@ -6,19 +6,28 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="color-scheme" content="dark">
   <title>Local Voice Studio</title>
-  <link rel="stylesheet" href="studio.css?v=2">
-  <script type="module" src="studio.mjs?v=2"></script>
+  <link rel="icon" type="image/png" href="capybara.png">
+  <link rel="preload" as="image" href="capybara-speech.png" media="(prefers-reduced-motion: no-preference)">
+  <link rel="stylesheet" href="studio.css?v=3">
+  <script type="module" src="studio.mjs?v=3"></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="./"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span> Local Voice Studio</a>
+    <a class="brand" href="./"><img class="brand-icon" src="capybara.png" width="38" height="38" alt=""> Local Voice Studio</a>
     <span class="local"><span aria-hidden="true"></span> On-device synthesis</span>
   </header>
 
   <main>
-    <div class="heading">
-      <h1>Text to speech</h1>
-      <p>Generate narration on your laptop. Blend two voices to create a voice profile you can reuse.</p>
+    <div class="heading hero">
+      <div class="hero-copy">
+        <h1>Text to <span>speech</span></h1>
+        <p>Generate narration on your laptop. Blend two voices to create a voice profile you can reuse.</p>
+        <a class="hero-jump" href="#script">Start writing <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="voice-stage" id="voice-stage" aria-hidden="true">
+        <canvas id="voice-signal"></canvas>
+        <div class="capy-wrap"><div class="capy" id="stage-capy"></div></div>
+      </div>
     </div>
 
     <form id="studio" class="layout">
@@ -33,10 +42,13 @@
             <span id="count"></span>
             <button type="submit" id="generate" class="primary" disabled><span aria-hidden="true">▶</span> Generate audio</button>
           </div>
-          <p class="status" id="status" role="status">Ready · The first generation loads the local model.</p>
+          <div class="status-row">
+            <span class="capy status-capy" aria-hidden="true"></span>
+            <p class="status" id="status" role="status">Ready · The first generation loads the local model.</p>
+          </div>
         </section>
 
-        <section class="panel audio">
+        <section class="panel audio" data-reveal>
           <div class="panel-title">
             <h2>Preview</h2>
             <a id="save-wave" class="quiet" download="local-voice.wav" hidden>Download WAV</a>
@@ -50,12 +62,12 @@
         </section>
       </div>
 
-      <aside class="panel voice">
+      <aside class="panel voice" data-reveal>
         <div class="panel-title"><h2>Voice</h2></div>
         <label class="field">Language
           <select id="language" aria-describedby="language-status"></select>
         </label>
-        <label>
+        <label class="auto-language">
           <input type="checkbox" id="auto-language" checked>
           Detect language on paste
         </label>
