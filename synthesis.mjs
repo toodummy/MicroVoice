@@ -6,7 +6,7 @@ function enableMulticore() {
     || !navigator.serviceWorker || navigator.hardwareConcurrency < 2 || window.top !== window) return;
 
   const serviceWorker = navigator.serviceWorker;
-  const reloadKey = "microvoice-multicore-reload";
+  const reloadKey = `capyvoice-multicore-reload:${new URL("./", import.meta.url).pathname}`;
   let interacted = false;
   const markInteraction = () => { interacted = true; };
   window.addEventListener("input", markInteraction, { capture: true, once: true });
@@ -29,7 +29,7 @@ enableMulticore();
 
 export function generateAudio(settings, updateStatus) {
   if (!globalThis.WebAssembly || !globalThis.Worker || !globalThis.DecompressionStream) {
-    throw new Error("Open MicroVoice in a current version of Safari, Chrome, Edge, or Firefox.");
+    throw new Error("Open CapyVoice in a current version of Safari, Chrome, Edge, or Firefox.");
   }
   const allowMulticore = globalThis.crossOriginIsolated && navigator.hardwareConcurrency > 1;
   return new Promise((resolve, reject) => {

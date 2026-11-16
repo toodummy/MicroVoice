@@ -1,4 +1,4 @@
-import { generateAudio } from "./synthesis.mjs?v=2";
+import { generateAudio } from "./synthesis.mjs?v=3";
 import { detectLanguage } from "./detect-language.mjs";
 import { MAX_TEXT_LENGTH } from "./text-settings.mjs";
 import { createStudioMotion } from "./motion.mjs";
@@ -175,7 +175,7 @@ get("save-profile").addEventListener("click", () => {
   const profile = { format: "local-voice-profile", version: 1, ...currentVoice() };
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([JSON.stringify(profile, null, 2) + "\n"], { type: "application/json" }));
-  link.download = `local-voice-${profile.lang}.json`;
+  link.download = `capyvoice-${profile.lang}.json`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(link.href), 1_000);
   profileStatus("Profile exported.");

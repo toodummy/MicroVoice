@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="color-scheme" content="dark">
-  <title>MicroVoice</title>
+  <title>CapyVoice</title>
   <link rel="icon" type="image/png" href="capybara.png">
   <link rel="preload" as="image" href="capybara-speech.png" media="(prefers-reduced-motion: no-preference)">
   <link rel="stylesheet" href="studio.css?v=3">
-  <script type="module" src="studio.mjs?v=3"></script>
+  <script type="module" src="studio.mjs?v=4"></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="./"><img class="brand-icon" src="capybara.png" width="38" height="38" alt=""> MicroVoice</a>
+    <a class="brand" href="./"><img class="brand-icon" src="capybara.png" width="38" height="38" alt=""> CapyVoice</a>
     <span class="local"><span aria-hidden="true"></span> Browser mode</span>
   </header>
 
@@ -51,7 +51,7 @@
         <section class="panel audio" data-reveal>
           <div class="panel-title">
             <h2>Preview</h2>
-            <a id="save-wave" class="quiet" download="local-voice.wav" hidden>Download WAV</a>
+            <a id="save-wave" class="quiet" download="capyvoice.wav" hidden>Download WAV</a>
           </div>
           <canvas id="waveform" width="640" height="84" aria-hidden="true"></canvas>
           <div class="audio-caption">
