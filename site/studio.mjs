@@ -1,3 +1,5 @@
+import { generateAudio } from "./synthesis.mjs";
+
 const get = (id) => document.getElementById(id);
 const languages = await (async () => {
   try {
@@ -98,16 +100,7 @@ form.addEventListener("submit", async (event) => {
   setStatus("Generating speech on your CPU…");
   const start = performance.now();
   try {
-    const response = await fetch("/api/synthesize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: script.value, ...currentVoice() }),
-    });
-    if (!response.ok) {
-      const result = await response.json().catch(() => null);
-      throw new Error(result?.message || "Synthesis failed.");
-    }
-    const wav = await response.arrayBuffer();
+    const wav = await generateAudio({ text: script.value, ...currentVoice() }, setStatus);
     const audio = parseWave(wav);
     if (audioURL) URL.revokeObjectURL(audioURL);
     audioURL = URL.createObjectURL(new Blob([wav], { type: "audio/wav" }));

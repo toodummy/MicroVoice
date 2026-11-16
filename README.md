@@ -4,7 +4,28 @@ Generate speech on your laptop in English, Russian, Spanish, French, German,
 Mandarin, Japanese, Korean, Italian, and Brazilian Portuguese. The interface
 opens in your browser and the model runs on your CPU.
 
-## Start
+## Browser mode
+
+[Open MicroVoice](https://toodummy.github.io/MicroVoice/) in a current version
+of Chrome, Edge, Firefox, or Safari. Choose a language, enter text, and select
+**Generate audio**. The first synthesis downloads the selected model and
+pronunciation data. Generation and WAV export run on your device using
+WebAssembly. Your text and recordings stay in your browser.
+
+To build and preview the browser edition locally with Node.js 20 or later:
+
+```sh
+cd browser
+npm ci
+npm run build
+python3 -m http.server 8765 --directory dist
+```
+
+Open <http://127.0.0.1:8765/>. Japanese browser pronunciation uses the
+Kuromoji dictionary. Browser runtime and dictionary notices are included in
+`dist/licenses` after the build.
+
+## Desktop mode
 
 Install 64-bit Python 3.11 or 3.12. Clone the repository or extract its ZIP,
 then open the project folder.

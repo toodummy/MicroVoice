@@ -1,0 +1,22 @@
+{
+  "name": "microvoice-browser",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@echogarden/espeak-ng-emscripten": "0.3.5",
+    "@pipedog/espeak-ng": "0.11.0",
+    "kuromoji": "0.1.2",
+    "onnxruntime-web": "1.25.1",
+    "xz-decompress": "0.2.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}
