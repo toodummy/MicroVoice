@@ -3,6 +3,7 @@ import { EspeakNG } from "@pipedog/espeak-ng/espeak";
 import createEspeakModule from "@echogarden/espeak-ng-emscripten";
 import { XzReadableStream } from "xz-decompress";
 import { japanesePhonemes } from "./japanese.mjs";
+import { MAX_TEXT_LENGTH } from "../site/text-settings.mjs";
 
 const MAX_PHONES = 350;
 const STYLE_WIDTH = 256;
@@ -56,14 +57,15 @@ async function gzipAsset(path) {
   return new Response(response.body.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
 }
 
-async function configureOrt() {
+async function configureOrt(singleThread) {
   ort.env.logLevel = "error";
-  ort.env.wasm.numThreads = 1;
+  ort.env.wasm.numThreads = !singleThread && self.crossOriginIsolated && typeof SharedArrayBuffer === "function"
+    ? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 1)) : 1;
   ort.env.wasm.wasmPaths = { mjs: new URL("ort-wasm-simd-threaded.mjs", RUNTIME).href };
   ort.env.wasm.wasmBinary = await gzipAsset("ort.wasm.gz");
 }
 
-async function modelFor(lang) {
+async function modelFor(lang, singleThread) {
   const family = lang === "zh" ? "mandarin" : "kitten";
   if (activeModel?.family === family) return activeModel.session;
   if (activeModel) {
@@ -71,13 +73,20 @@ async function modelFor(lang) {
     activeModel = undefined;
   }
   status("Loading the on-device model…");
-  ortReady ??= configureOrt().catch((error) => {
+  ortReady ??= configureOrt(singleThread).catch((error) => {
     ortReady = undefined;
     throw error;
   });
   const [graph] = await Promise.all([downloadModel(`${family}.onnx.gz`), ortReady]);
   status("Starting the model in WebAssembly…");
-  const session = await ort.InferenceSession.create(octets(graph), { executionProviders: ["wasm"] });
+  let session;
+  try {
+    session = await ort.InferenceSession.create(octets(graph), { executionProviders: ["wasm"] });
+  } catch (error) {
+    if (ort.env.wasm.numThreads <= 1) throw error;
+    self.postMessage({ type: "retry-single" });
+    return null;
+  }
   activeModel = { family, session };
   return session;
 }
@@ -124,8 +133,31 @@ function foldIpa(phones, lang) {
     .replace(/[\u2000-\u200a\u202f]/gu, " ");
 }
 
+function boundedTextParts(text, limit) {
+  const parts = [];
+  let start = 0;
+  while (text.length - start > limit) {
+    const limitAt = start + limit;
+    let cut = limitAt;
+    for (let index = limitAt - 1; index >= start + limit / 2; index--) {
+      if (/[\s,;:，、；：]/u.test(text[index])) {
+        cut = index + 1;
+        break;
+      }
+    }
+    // Keep a UTF-16 surrogate pair together at a forced split.
+    const next = text.charCodeAt(cut);
+    if (next >= 0xdc00 && next <= 0xdfff) cut--;
+    parts.push(text.slice(start, cut));
+    start = cut;
+  }
+  parts.push(text.slice(start));
+  return parts;
+}
+
 async function kittenChunks(text, lang, vocab) {
-  const lines = normalize(text, lang).split(SENTENCE_BREAK).filter((line) => SPEECH.test(line));
+  const lines = normalize(text, lang).split(SENTENCE_BREAK)
+    .flatMap((line) => boundedTextParts(line, 600)).filter((line) => SPEECH.test(line));
   const eSpeak = lang === "ja" ? null : await phonemizer(lang);
   if (lang === "ja") status("Preparing Japanese pronunciation…");
   const chunks = [];
@@ -213,7 +245,7 @@ async function generateKitten(session, { text, lang, voiceA, voiceB, blend, spee
       style: new ort.Tensor("float32", style, [1, STYLE_WIDTH]),
       speed: floats([speed], [1]),
     });
-    audio.push(trimKitten(result.waveform.data, result.durations.data, index === 0));
+    audio.push(pcm16(trimKitten(result.waveform.data, result.durations.data, index === 0)));
   }
   return encodeWav(audio, 24_000, 0.15);
 }
@@ -224,7 +256,7 @@ async function generateMandarin(session, { text, speed }) {
   const config = mandarinConfig;
   const phones = config.phoneme_id_map;
   const segments = normalize(text, "zh").split(SENTENCE_BREAK)
-    .flatMap((line) => line.match(/[\s\S]{1,160}/gu) ?? []).filter((line) => SPEECH.test(line));
+    .flatMap((line) => boundedTextParts(line, 160)).filter((line) => SPEECH.test(line));
   const audio = [];
   for (const [index, segment] of segments.entries()) {
     status(`Generating Mandarin speech · ${index + 1} of ${segments.length}`);
@@ -247,18 +279,30 @@ async function generateMandarin(session, { text, speed }) {
     const signal = result[session.outputNames[0]].data;
     let peak = 0;
     for (const sample of signal) peak = Math.max(peak, Math.abs(sample));
-    audio.push(Float32Array.from(signal, (sample) => sample / Math.max(peak, 0.01)));
+    audio.push(pcm16(signal, Math.max(peak, 0.01)));
   }
   return encodeWav(audio, config.audio.sample_rate, 0.12);
+}
+
+function pcm16(signal, divisor = 1) {
+  const bytes = new Uint8Array(signal.length * 2);
+  const view = new DataView(bytes.buffer);
+  for (let index = 0; index < signal.length; index++) {
+    const value = Math.fround(signal[index] / divisor);
+    if (!Number.isFinite(value)) throw new Error("The engine produced invalid audio.");
+    const sample = Math.max(-1, Math.min(1, value));
+    view.setInt16(index * 2, Math.round(sample * (sample < 0 ? 32768 : 32767)), true);
+  }
+  return bytes;
 }
 
 function encodeWav(chunks, rate, pauseSeconds) {
   if (!chunks.length || !chunks.some((chunk) => chunk.length)) {
     throw new Error("No speech was generated for this text.");
   }
-  const pause = Math.round(rate * pauseSeconds);
-  const frames = chunks.reduce((sum, chunk) => sum + chunk.length, (chunks.length - 1) * pause);
-  const buffer = new ArrayBuffer(44 + frames * 2);
+  const pause = Math.round(rate * pauseSeconds) * 2;
+  const dataBytes = chunks.reduce((sum, chunk) => sum + chunk.byteLength, (chunks.length - 1) * pause);
+  const buffer = new ArrayBuffer(44 + dataBytes);
   const view = new DataView(buffer);
   view.setUint32(0, 0x52494646);
   view.setUint32(4, buffer.byteLength - 8, true);
@@ -272,26 +316,23 @@ function encodeWav(chunks, rate, pauseSeconds) {
   view.setUint16(32, 2, true);
   view.setUint16(34, 16, true);
   view.setUint32(36, 0x64617461);
-  view.setUint32(40, frames * 2, true);
+  view.setUint32(40, dataBytes, true);
+  const bytes = new Uint8Array(buffer);
   let cursor = 44;
   for (const chunk of chunks) {
-    for (const value of chunk) {
-      if (!Number.isFinite(value)) throw new Error("The engine produced invalid audio.");
-      const sample = Math.max(-1, Math.min(1, value));
-      view.setInt16(cursor, Math.round(sample * (sample < 0 ? 32768 : 32767)), true);
-      cursor += 2;
-    }
-    cursor += pause * 2;
+    bytes.set(chunk, cursor);
+    cursor += chunk.byteLength + pause;
   }
   return buffer;
 }
 
 self.onmessage = async ({ data }) => {
   try {
-    if (typeof data.text !== "string" || data.text.length > 5_000 || !SPEECH.test(data.text)) {
-      throw new Error("Enter 1–5,000 characters of spoken text.");
+    if (typeof data.text !== "string" || data.text.length > MAX_TEXT_LENGTH || !SPEECH.test(data.text)) {
+      throw new Error(`Enter 1–${MAX_TEXT_LENGTH.toLocaleString()} characters of spoken text.`);
     }
-    const session = await modelFor(data.lang);
+    const session = await modelFor(data.lang, data.singleThread);
+    if (!session) return;
     const wav = data.lang === "zh" ? await generateMandarin(session, data) : await generateKitten(session, data);
     self.postMessage({ type: "audio", wav }, [wav]);
   } catch (error) {

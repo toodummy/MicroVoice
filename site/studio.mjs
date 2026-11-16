@@ -1,4 +1,6 @@
-import { generateAudio } from "./synthesis.mjs";
+import { generateAudio } from "./synthesis.mjs?v=2";
+import { detectLanguage } from "./detect-language.mjs";
+import { MAX_TEXT_LENGTH } from "./text-settings.mjs";
 
 const get = (id) => document.getElementById(id);
 const languages = await (async () => {
@@ -17,6 +19,8 @@ const example = Object.fromEntries(Object.entries(languages).map(([code, languag
 const form = get("studio");
 const script = get("script");
 const lang = get("language");
+const autoLanguage = get("auto-language");
+const languageStatus = get("language-status");
 const voiceA = get("voice-a");
 const voiceB = get("voice-b");
 const blend = get("blend");
@@ -41,7 +45,7 @@ function updateControls() {
   blend.disabled = !voiceB.value;
   get("blend-value").textContent = voiceB.value ? `${blend.value}%` : "—";
   get("speed-value").textContent = `${Number(speed.value).toFixed(2)}×`;
-  get("count").textContent = `${script.value.length.toLocaleString()} / 5,000`;
+  get("count").textContent = `${script.value.length.toLocaleString()} / ${MAX_TEXT_LENGTH.toLocaleString()}`;
   generate.disabled = inProgress || !/[\p{L}\p{N}]/u.test(script.value);
 }
 function loadVoices() {
@@ -83,7 +87,8 @@ function parseWave(wav) {
   const frames = data.getUint32(40, true) / 2;
   if (44 + frames * 2 !== wav.byteLength) throw new Error("The WAV response is incomplete.");
   const peaks = new Float32Array(76);
-  for (let i = 0; i < frames; i++) {
+  const stride = Math.max(1, Math.ceil(frames / 200_000));
+  for (let i = 0; i < frames; i += stride) {
     const bucket = Math.floor(i * peaks.length / frames);
     const level = Math.abs(data.getInt16(44 + i * 2, true)) / 32768;
     peaks[bucket] = Math.max(peaks[bucket], level);
@@ -121,7 +126,31 @@ form.addEventListener("submit", async (event) => {
     updateControls();
   }
 });
+function pickLanguage(text) {
+  if (!autoLanguage.checked || !/\p{L}/u.test(text)) return;
+  const code = detectLanguage(text);
+  if (!code || !Object.hasOwn(voices, code)) {
+    languageStatus.textContent = "Language unclear. You can choose it above.";
+    return;
+  }
+  if (lang.value !== code) {
+    lang.value = code;
+    loadVoices();
+  }
+  languageStatus.textContent = `Detected ${languages[code].name}`;
+}
+
+script.addEventListener("paste", (event) => {
+  const pasted = event.clipboardData?.getData("text/plain");
+  if (pasted) pickLanguage(pasted);
+});
+autoLanguage.addEventListener("change", () => {
+  languageStatus.textContent = "";
+  pickLanguage(script.value);
+});
 lang.addEventListener("change", () => {
+  autoLanguage.checked = false;
+  languageStatus.textContent = "";
   if (Object.values(example).includes(script.value)) script.value = example[lang.value];
   loadVoices();
 });
@@ -158,6 +187,8 @@ get("profile-file").addEventListener("change", async ({ currentTarget }) => {
     }
     if (Object.values(example).includes(script.value)) script.value = example[language];
     lang.value = language;
+    autoLanguage.checked = false;
+    languageStatus.textContent = "";
     loadVoices();
     voiceA.value = a;
     voiceB.value = b;

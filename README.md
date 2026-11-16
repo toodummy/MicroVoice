@@ -9,9 +9,11 @@ opens in your browser and the model runs on your CPU.
 ## Browser mode
 
 Use the live link above in a current version of Chrome, Edge, Firefox, or
-Safari. Choose a language, enter text, and select **Generate audio**. The first synthesis downloads the selected model and
-pronunciation data. Generation and WAV export run on your device using
-WebAssembly. Your text and recordings stay in your browser.
+Safari. Paste up to 30,000 characters and select **Generate audio**. MicroVoice detects the language on paste, and you can choose a language manually at any time.
+
+The first synthesis downloads the selected model and pronunciation data.
+Browser mode uses up to four CPU threads when the browser supports them.
+Generation and WAV export run on your device. Your text and recordings stay in your browser.
 
 <details>
 <summary>Build and preview locally (developers)</summary>

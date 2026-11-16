@@ -22,6 +22,7 @@ await cp(new URL("../licenses/", root), notices, { recursive: true });
 
 const copies = [
   [new URL("synthesis.mjs", root), new URL("synthesis.mjs", dist)],
+  [new URL("isolation.js", root), new URL("isolation.js", dist)],
   [new URL("onnxruntime-web/dist/ort.wasm.min.mjs", dependencies), new URL("ort.wasm.min.mjs", vendor)],
   [new URL("onnxruntime-web/dist/ort-wasm-simd-threaded.mjs", dependencies), new URL("ort-wasm-simd-threaded.mjs", vendor)],
   [new URL("kuromoji/dict/", dependencies), new URL("ja-dict/", vendor)],

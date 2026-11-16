@@ -22,7 +22,7 @@ from phonemizer.separator import Separator
 
 ROOT = Path(__file__).resolve().parent / "site" / "model"
 SAMPLE_RATE = 24_000
-MAX_TEXT = 5_000
+MAX_TEXT = 30_000
 MAX_PHONES = 350
 LANGUAGES = json.loads((ROOT / "voices.json").read_text(encoding="utf-8"))
 STYLES = {lang: tuple(spec["voices"]) for lang, spec in LANGUAGES.items()}
@@ -225,7 +225,7 @@ def generate(payload: dict) -> bytes:
         raise ValueError("Invalid generation request.")
     text = payload.get("text")
     if not isinstance(text, str) or len(text) > MAX_TEXT or not any(c.isalnum() for c in text):
-        raise ValueError("Enter 1–5,000 characters of spoken text.")
+        raise ValueError(f"Enter 1–{MAX_TEXT:,} characters of spoken text.")
     lang = payload.get("lang", "en")
     voice_a = payload.get("voiceA")
     voice_b = payload.get("voiceB", "")

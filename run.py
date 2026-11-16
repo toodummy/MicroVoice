@@ -43,7 +43,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError:
             length = 0
-        if not 0 < length <= 32_768:
+        if not 0 < length <= 512_000:
             self._error(413, "Request is missing or too large.")
             return
         try:
