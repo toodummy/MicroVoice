@@ -1,0 +1,33 @@
+{
+  "name": "Kitten TTS 2 Mini",
+  "upstream": "https://huggingface.co/KittenML/kitten-tts-2-mini",
+  "revision": "c01797caec3967b400da457656e011eb81f530a4",
+  "license": "Apache-2.0",
+  "parameters_approx": 82000000,
+  "onnx_bytes": 82711386,
+  "sample_rate_hz": 24000,
+  "studio_languages": [
+    "en",
+    "ru",
+    "es",
+    "fr",
+    "de",
+    "zh",
+    "ja",
+    "ko",
+    "it",
+    "pt"
+  ],
+  "onnx_sha256": "fa821c1cdd8f7fbfdbd5d1cae0a767673871d62696b85af7db059a9bd26b42d2",
+  "onnx_pack": "kitten.onnx.gz",
+  "packed_onnx_bytes": 72948005,
+  "mandarin": {
+    "name": "Piper HuaYan x_low",
+    "upstream": "https://huggingface.co/rhasspy/piper-voices/tree/v1.0.0/zh/zh_CN/huayan/x_low",
+    "onnx_pack": "mandarin.onnx.gz",
+    "packed_onnx_bytes": 18706065,
+    "onnx_bytes": 20628813,
+    "onnx_sha256": "d30b143fac66d821a1285aa013295adf5cd129d3cc11d70334e51c7b20662c37",
+    "sample_rate_hz": 16000
+  }
+}

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="dark">
+  <title>MicroVoice</title>
+  <link rel="stylesheet" href="studio.css">
+  <script type="module" src="studio.mjs"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span> MicroVoice</a>
+    <span class="local"><span aria-hidden="true"></span> Browser mode</span>
+  </header>
+
+  <main>
+    <div class="heading">
+      <h1>Text to speech</h1>
+      <p>Generate speech in ten languages. Your text and audio stay on this device.</p>
+    </div>
+
+    <form id="studio" class="layout">
+      <div class="stack">
+        <section class="panel script">
+          <div class="panel-title">
+            <h2><label for="script">Script</label></h2>
+            <button type="button" class="quiet" id="example">Load sample text</button>
+          </div>
+          <textarea id="script" maxlength="5000" aria-describedby="count" spellcheck="false" placeholder="Enter the text you want to hear…">The last train had already left. But then a light flickered on at the end of the platform, and someone called her name.</textarea>
+          <div class="script-footer">
+            <span id="count"></span>
+            <button type="submit" id="generate" class="primary" disabled><span aria-hidden="true">▶</span> Generate audio</button>
+          </div>
+          <p class="status" id="status" role="status">Ready · First use downloads the model and pronunciation data.</p>
+        </section>
+
+        <section class="panel audio">
+          <div class="panel-title">
+            <h2>Preview</h2>
+            <a id="save-wave" class="quiet" download="local-voice.wav" hidden>Download WAV</a>
+          </div>
+          <canvas id="waveform" width="640" height="84" aria-hidden="true"></canvas>
+          <div class="audio-caption">
+            <span id="audio-info">Your audio will appear here.</span>
+            <span id="audio-format">Mono WAV</span>
+          </div>
+          <audio id="player" controls preload="metadata" hidden></audio>
+        </section>
+      </div>
+
+      <aside class="panel voice">
+        <div class="panel-title"><h2>Voice</h2></div>
+        <label class="field">Language
+          <select id="language"></select>
+        </label>
+        <label class="field">Voice preset
+          <select id="voice-a"></select>
+        </label>
+        <label class="field">Blend with
+          <select id="voice-b"></select>
+        </label>
+        <label class="field slider"><span>Blend amount <output id="blend-value" for="blend">35%</output></span>
+          <input type="range" id="blend" min="0" max="100" value="35" disabled>
+        </label>
+        <label class="field slider"><span>Speaking speed <output id="speed-value" for="speed">1.00×</output></span>
+          <input type="range" id="speed" min="0.75" max="1.3" step="0.05" value="1">
+        </label>
+        <div class="profiles">
+          <button type="button" class="quiet" id="save-profile">Export profile</button>
+          <label class="import quiet" for="profile-file">Import profile
+            <input id="profile-file" type="file" accept=".json,application/json">
+          </label>
+        </div>
+        <p class="profile-status" id="profile-status" role="status"></p>
+      </aside>
+    </form>
+    <footer>10 languages <span aria-hidden="true">·</span> On-device synthesis <span aria-hidden="true">·</span> <a class="quiet" href="https://github.com/toodummy/MicroVoice">Source on GitHub</a></footer>
+  </main>
+</body>
+</html>
