@@ -1,18 +1,22 @@
 # MicroVoice
 
+**[Launch MicroVoice in your browser](https://toodummy.github.io/MicroVoice/)**
+
 Generate speech on your laptop in English, Russian, Spanish, French, German,
 Mandarin, Japanese, Korean, Italian, and Brazilian Portuguese. The interface
 opens in your browser and the model runs on your CPU.
 
 ## Browser mode
 
-[Open MicroVoice](https://toodummy.github.io/MicroVoice/) in a current version
-of Chrome, Edge, Firefox, or Safari. Choose a language, enter text, and select
-**Generate audio**. The first synthesis downloads the selected model and
+Use the live link above in a current version of Chrome, Edge, Firefox, or
+Safari. Choose a language, enter text, and select **Generate audio**. The first synthesis downloads the selected model and
 pronunciation data. Generation and WAV export run on your device using
 WebAssembly. Your text and recordings stay in your browser.
 
-To build and preview the browser edition locally with Node.js 20 or later:
+<details>
+<summary>Build and preview locally (developers)</summary>
+
+Use Node.js 20 or later.
 
 ```sh
 cd browser
@@ -21,9 +25,11 @@ npm run build
 python3 -m http.server 8765 --directory dist
 ```
 
-Open <http://127.0.0.1:8765/>. Japanese browser pronunciation uses the
-Kuromoji dictionary. Browser runtime and dictionary notices are included in
-`dist/licenses` after the build.
+After starting the server, open `http://127.0.0.1:8765/` on the computer
+running it. Japanese browser pronunciation uses the Kuromoji dictionary.
+Browser runtime and dictionary notices are in `dist/licenses` after the build.
+
+</details>
 
 ## Desktop mode
 
@@ -50,7 +56,7 @@ python3 -m venv .venv
 .venv/bin/python run.py
 ```
 
-The studio opens at <http://127.0.0.1:8765/>. Choose a language and voice,
+The desktop launcher opens the studio locally at `http://127.0.0.1:8765/`. Choose a language and voice,
 enter a script or load the sample text, then select **Generate audio**.
 You can play the result or download a mono WAV. Keep the launcher terminal
 open while using it.
