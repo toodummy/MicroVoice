@@ -7,9 +7,9 @@
   <meta name="color-scheme" content="dark">
   <title>CapyVoice</title>
   <link rel="icon" type="image/png" href="capybara.png">
-  <link rel="preload" as="image" href="capybara-speech.png" media="(prefers-reduced-motion: no-preference)">
-  <link rel="stylesheet" href="studio.css?v=3">
-  <script type="module" src="studio.mjs?v=4"></script>
+  <link rel="preload" as="image" href="capybara-speech.png">
+  <link rel="stylesheet" href="studio.css?v=4">
+  <script type="module" src="studio.mjs?v=5"></script>
 </head>
 <body>
   <header class="topbar">
@@ -24,15 +24,18 @@
         <p>Generate speech in ten languages. Your text and audio stay on this device.</p>
         <a class="hero-jump" href="#script">Start writing <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="voice-stage" id="voice-stage" aria-hidden="true">
-        <canvas id="voice-signal"></canvas>
-        <div class="capy-wrap"><div class="capy" id="stage-capy"></div></div>
+      <div class="voice-stage" id="voice-stage">
+        <canvas id="voice-signal" aria-hidden="true"></canvas>
+        <button class="capy-button" id="capy-button" type="button">
+          <span class="capy" id="stage-capy" aria-hidden="true"></span>
+          <span class="capy-caption">Animate Capy</span>
+        </button>
       </div>
     </div>
 
     <form id="studio" class="layout">
       <div class="stack">
-        <section class="panel script">
+        <section class="panel script" data-reveal>
           <div class="panel-title">
             <h2><label for="script">Script</label></h2>
             <button type="button" class="quiet" id="example">Load sample text</button>
