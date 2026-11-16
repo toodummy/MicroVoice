@@ -7,7 +7,7 @@
   <meta name="color-scheme" content="dark">
   <title>MicroVoice</title>
   <link rel="stylesheet" href="studio.css">
-  <script type="module" src="studio.mjs"></script>
+  <script type="module" src="studio.mjs?v=2"></script>
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
             <h2><label for="script">Script</label></h2>
             <button type="button" class="quiet" id="example">Load sample text</button>
           </div>
-          <textarea id="script" maxlength="5000" aria-describedby="count" spellcheck="false" placeholder="Enter the text you want to hear…">The last train had already left. But then a light flickered on at the end of the platform, and someone called her name.</textarea>
+          <textarea id="script" maxlength="30000" aria-describedby="count" spellcheck="false" placeholder="Enter the text you want to hear…">The last train had already left. But then a light flickered on at the end of the platform, and someone called her name.</textarea>
           <div class="script-footer">
             <span id="count"></span>
             <button type="submit" id="generate" class="primary" disabled><span aria-hidden="true">▶</span> Generate audio</button>
@@ -53,8 +53,13 @@
       <aside class="panel voice">
         <div class="panel-title"><h2>Voice</h2></div>
         <label class="field">Language
-          <select id="language"></select>
+          <select id="language" aria-describedby="language-status"></select>
         </label>
+        <label>
+          <input type="checkbox" id="auto-language" checked>
+          Detect language on paste
+        </label>
+        <p class="profile-status" id="language-status" role="status"></p>
         <label class="field">Voice preset
           <select id="voice-a"></select>
         </label>
