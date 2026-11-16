@@ -32,7 +32,7 @@ main { max-width: 1158px; padding: 60px 24px 30px; margin: auto }
 .heading { margin-bottom: 33px }
 h1 { font-size: clamp(2.3rem, 5vw, 4rem); line-height: 1.04; letter-spacing: -.063em; margin: 0 0 12px; font-weight: 670 }
 .heading p { color: var(--muted); margin: 0; max-width: 52ch }
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 305px); align-items: start; gap: 18px }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 305px); align-items: stretch; gap: 18px }
 .stack { display: grid; gap: 18px; min-width: 0 }
 .panel { padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); min-width: 0 }
 .panel-title { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 14px }
