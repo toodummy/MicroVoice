@@ -100,7 +100,7 @@ def main():
     try:
         with ThreadingHTTPServer(("127.0.0.1", port), factory) as server:
             url = f"http://127.0.0.1:{server.server_port}/"
-            print(f"Local Voice Studio · {url}", flush=True)
+            print(f"CapyVoice · {url}", flush=True)
             print("Press Ctrl+C to stop.", flush=True)
             if not getattr(args, "no_open", False):
                 open_page = Timer(0.3, webbrowser.open, args=(url,))

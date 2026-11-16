@@ -1,6 +1,6 @@
-# MicroVoice
+# CapyVoice
 
-**[Launch MicroVoice in your browser](https://toodummy.github.io/MicroVoice/)**
+**[Launch CapyVoice in your browser](https://toodummy.github.io/MicroVoice/)**
 
 Generate speech on your laptop in English, Russian, Spanish, French, German,
 Mandarin, Japanese, Korean, Italian, and Brazilian Portuguese. The interface
@@ -9,7 +9,7 @@ opens in your browser and the model runs on your CPU.
 ## Browser mode
 
 Use the live link above in a current version of Chrome, Edge, Firefox, or
-Safari. Paste up to 30,000 characters and select **Generate audio**. MicroVoice detects the language on paste, and you can choose a language manually at any time.
+Safari. Paste up to 30,000 characters and select **Generate audio**. CapyVoice detects the language on paste, and you can choose a language manually at any time.
 
 The first synthesis downloads the selected model and pronunciation data.
 Browser mode uses up to four CPU threads when the browser supports them.

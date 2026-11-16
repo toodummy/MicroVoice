@@ -74,7 +74,6 @@ await build({
 const htmlPath = new URL("index.html", dist);
 const html = (await readFile(htmlPath, "utf8"))
   .replace("script-src 'self';", "script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:;")
-  .replaceAll("Local Voice Studio", "MicroVoice")
   .replace("On-device synthesis", "Browser mode")
   .replace("Generate narration on your laptop. Blend two voices to create a voice profile you can reuse.",
     "Generate speech in ten languages. Your text and audio stay on this device.")
