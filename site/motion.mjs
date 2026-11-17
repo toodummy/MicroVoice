@@ -1,7 +1,6 @@
 const MOUTH_FPS = 25;
 const WAITING_MOUTHS = [0, 1, 3, 2, 2, 1, 0, 2, 3, 3, 1, 0, 0];
 const SCENE_DURATION = 2_300;
-const ease = (x) => x * x * (3 - 2 * x);
 
 export function analyzeMouth(wav, frames, sampleRate) {
   const framesPerPose = sampleRate / MOUTH_FPS;
@@ -25,80 +24,33 @@ export function analyzeMouth(wav, frames, sampleRate) {
   return mouths;
 }
 
-function drawSoundField(ctx, width, height, travel) {
-  const focus = ease(travel);
-  const yaw = -.38 + .99 * focus;
-  const cos = Math.cos(yaw), sin = Math.sin(yaw);
-  const unit = Math.min(width, height * 1.65) * (.068 + .025 * focus);
-
-  function project(x, y, z) {
-    const depth = z * cos - x * sin;
-    const scale = unit / (1 + depth * .052);
-    return [width * .5 + (x * cos + z * sin) * scale, height * (.70 + .06 * focus) + (-depth * (.25 + .14 * focus) - y) * scale];
-  }
-  function face(points, fill, edge) {
-    ctx.beginPath();
-    ctx.moveTo(...points[0]);
-    for (const point of points.slice(1)) ctx.lineTo(...point);
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-    if (edge) {
-      ctx.strokeStyle = edge;
-      ctx.stroke();
-    }
-  }
-
+// The central trace is brightest. The outer traces have a smaller range.
+function drawSignal(ctx, width, height, progress) {
+  const travel = progress * 40;
+  const phase = 1.2 + travel * .17;
+  const level = height * .12;
   ctx.clearRect(0, 0, width, height);
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "#b66c5435";
-  ctx.beginPath();
-  for (let i = -8; i <= 8; i++) {
-    ctx.moveTo(...project(i, 0, -6));
-    ctx.lineTo(...project(i, 0, 7));
-    if (Math.abs(i) > 6) continue;
-    ctx.moveTo(...project(-8, 0, i));
-    ctx.lineTo(...project(8, 0, i));
-  }
-  ctx.stroke();
+  const gap = width > 390 ? 8 : 7;
+  const count = Math.floor(width / gap);
+  const middle = height * .52;
+  for (let i = 1; i < count; i++) {
+    const x = i * gap;
+    const p = x / width;
+    const envelope = .25 + .75 * Math.sin(Math.PI * p);
+    const wave = Math.sin(p * 20 + phase) + .52 * Math.sin(p * 44 - phase * .75);
+    const y = middle + wave * envelope * level + travel * (p - .5);
 
-  const columns = [];
-  for (let z = -5; z <= 6; z++) {
-    for (let x = -7; x <= 7; x++) {
-      const distance = Math.hypot(x, z);
-      if ((Math.abs(x * 17 + z * 23) % 9 < 3) || distance < 2.4) continue;
-      const sweep = Math.max(0, 1 - Math.abs(z - (-6 + 13 * focus)) / 2.2);
-      const ring = Math.exp(-((distance - 4.2) ** 2) / 2.4);
-      const weight = (.5 + .5 * Math.sin(x * 3.17 + z * 6.31));
-      const rise = .09 + weight * .51 + sweep * .98 + ring * focus * .8;
-      columns.push({ x, z, rise, depth: z * cos - x * sin, light: sweep });
-    }
-  }
-  columns.sort((a, b) => b.depth - a.depth);
-  for (const { x, z, rise, light } of columns) {
-    const a = project(x - .32, rise, z - .32), b = project(x + .32, rise, z - .32);
-    const c = project(x + .32, rise, z + .32), d = project(x - .32, rise, z + .32);
-    const lowA = project(x - .32, 0, z - .32), lowB = project(x + .32, 0, z - .32);
-    const lowC = project(x + .32, 0, z + .32), lowD = project(x - .32, 0, z + .32);
-    face([a, b, lowB, lowA], light > .58 ? "#9c3428" : "#301f28");
-    if (yaw > 0) face([b, c, lowC, lowB], "#41272e");
-    else face([d, a, lowA, lowD], "#58302d");
-    face([a, b, c, d], light > .74 ? "#ff9d5c" : light > .35 ? "#a65541" : "#533340",
-      light > .6 ? "#fabc7ba6" : "#a96f6c45");
-  }
+    ctx.fillStyle = i % 5 === 0 ? "#eeb45d" : "#c88c49";
+    ctx.globalAlpha = i % 5 === 0 ? .85 : .55;
+    ctx.fillRect(x, Math.round(y / 3) * 3, i % 5 === 0 ? 5 : 3, 3);
 
-  // Pale, interrupted paths lead the light across the floor as the camera moves.
-  for (const lane of [-4.5, 0, 4.5]) {
-    for (let offset = -6; offset < 6; offset += .5) {
-      const sweep = Math.max(0, 1 - Math.abs(offset + 6 - focus * 12) / 3.6);
-      if (!sweep) continue;
-      ctx.strokeStyle = `rgba(255, 174, 111, ${sweep * .6})`;
-      ctx.beginPath();
-      ctx.moveTo(...project(lane, .03, offset));
-      ctx.lineTo(...project(lane, .03, offset + .32));
-      ctx.stroke();
-    }
+    ctx.fillStyle = "#e88c59";
+    ctx.globalAlpha = .28;
+    const echo = Math.sin(p * 19 - phase * .7) * level * .55;
+    ctx.fillRect(x, middle - height * .19 + echo + travel * .24, 2, 2);
+    ctx.fillRect(x, middle + height * .19 - echo - travel * .24, 2, 2);
   }
+  ctx.globalAlpha = 1;
 }
 
 export function createStudioMotion(player, readMouths) {
@@ -141,7 +93,7 @@ export function createStudioMotion(player, readMouths) {
       progress = reduced.matches || !visible || progress < .008 ? 0 : progress * .78;
     }
     if (visible && progress !== painted && (progress === 0 || now - lastPaint >= 32)) {
-      if (ctx && width && height) drawSoundField(ctx, width, height, progress);
+      if (ctx && width && height) drawSignal(ctx, width, height, progress);
       stage.style.setProperty("--capy-y", `${-progress * 8}px`);
       stage.style.setProperty("--capy-scale", String(1 + progress * .06));
       painted = progress;

@@ -1,7 +1,7 @@
 import { generateAudio } from "./synthesis.mjs?v=3";
 import { detectLanguage } from "./detect-language.mjs";
 import { MAX_TEXT_LENGTH } from "./text-settings.mjs";
-import { analyzeMouth, createStudioMotion } from "./motion.mjs?v=4";
+import { analyzeMouth, createStudioMotion } from "./motion.mjs?v=5";
 
 const get = (id) => document.getElementById(id);
 const languages = await (async () => {
