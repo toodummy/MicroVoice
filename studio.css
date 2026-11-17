@@ -102,6 +102,7 @@ footer span { margin: 0 5px }
     repeating-linear-gradient(0deg, #be915611 0 1px, transparent 1px 28px), #111319;
 }
 .voice-stage {
+  --capy-size: clamp(110px, 29%, 165px);
   position: relative; display: block; width: 100%; padding: 0;
   min-height: clamp(260px, 31vw, 365px);
   background: none; border: 0; border-radius: 18px;
@@ -112,11 +113,37 @@ footer span { margin: 0 5px }
   image-rendering: pixelated;
 }
 .stage-capy {
-  position: absolute; top: 50%; left: 50%; width: clamp(110px, 29%, 165px);
+  position: absolute; top: 50%; left: 50%; width: var(--capy-size);
   transform: translate(-50%, calc(-50% + var(--capy-y, 0px))) scale(var(--capy-scale, 1));
   pointer-events: none;
   filter: drop-shadow(0 0 22px #fb9b4559) drop-shadow(0 9px 12px #241016b5);
 }
+.capy-bubble {
+  position: absolute; z-index: 1; top: 29%;
+  width: max-content; max-width: calc(50% - var(--capy-size) / 2 + 6px);
+  padding: 8px clamp(8px, 1.6vw, 14px); border: 2px solid #684526;
+  border-radius: 42% 47% 44% 41% / 58% 55% 53% 57%;
+  background: #fff1cf; color: #321f17;
+  font-size: clamp(.72rem, 2.7vw, 1rem); font-weight: 750; line-height: 1.3;
+  letter-spacing: -.02em; text-align: center; overflow-wrap: anywhere;
+  box-shadow: 0 3px 0 #211714, 0 0 24px #ffae6140;
+  pointer-events: none;
+}
+.capy-bubble[data-side="left"] {
+  right: calc(50% + var(--capy-size) / 2 - 6px);
+  transform-origin: bottom right;
+}
+.capy-bubble[data-side="right"] {
+  left: calc(50% + var(--capy-size) / 2 - 6px);
+  transform-origin: bottom left;
+}
+.capy-bubble::after {
+  content: ""; position: absolute; bottom: -6px;
+  width: 10px; height: 10px;
+  background: inherit; border-right: 2px solid #684526; border-bottom: 2px solid #684526;
+}
+.capy-bubble[data-side="left"]::after { right: 10px; transform: rotate(25deg) skewX(15deg) }
+.capy-bubble[data-side="right"]::after { left: 10px; transform: rotate(65deg) skewY(15deg) }
 .mouth {
   position: absolute; inset: 56.25% 29.1667% 22.9167%; background: #de7137;
   display: none;

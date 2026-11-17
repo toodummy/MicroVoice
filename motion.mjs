@@ -1,6 +1,12 @@
 const MOUTH_FPS = 25;
 const WAITING_MOUTHS = [0, 1, 3, 2, 2, 1, 0, 2, 3, 3, 1, 0, 0];
-const SCENE_DURATION = 2_300;
+const GREETINGS = [
+  ["en", "Hello!"], ["es", "¡Hola!"], ["fr", "Salut !"], ["ja", "こんにちは！"],
+  ["de", "Hallo!"], ["ko", "안녕!"], ["it", "Ciao!"], ["zh-Hans", "你好！"],
+  ["pt-BR", "Olá!"], ["ru", "Привет!"],
+];
+const GREETING_MS = 1_850;
+const SCENE_DURATION = GREETING_MS * 2;
 
 export function analyzeMouth(wav, frames, sampleRate) {
   const framesPerPose = sampleRate / MOUTH_FPS;
@@ -55,6 +61,7 @@ function drawSignal(ctx, width, height, seconds) {
 
 export function createStudioMotion(player, readMouths) {
   const stage = document.getElementById("voice-stage");
+  const bubble = document.getElementById("capy-bubble");
   const canvas = document.getElementById("voice-signal");
   const ctx = canvas.getContext("2d");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -63,6 +70,7 @@ export function createStudioMotion(player, readMouths) {
   let width = 0, height = 0, progress = 0, shownProgress = -1;
   let backgroundDirty = true, lastPaint = -Infinity;
   let hovering = false, tapUntil = 0, startedAt = null;
+  let nextGreeting = 0, shownTurn = -1, bubbleAnimation;
 
   const isPlaying = () => !player.paused && !player.ended;
   const state = () => working ? "working" : isPlaying() ? "playing" : "idle";
@@ -81,6 +89,27 @@ export function createStudioMotion(player, readMouths) {
     backgroundDirty = true;
     schedule();
   }
+  function showGreeting(turn) {
+    if (turn === shownTurn) return;
+    shownTurn = turn;
+    bubbleAnimation?.cancel();
+    bubble.hidden = turn < 0;
+    if (bubble.hidden) return;
+
+    const [lang, greeting] = GREETINGS[nextGreeting];
+    nextGreeting = (nextGreeting + 1) % GREETINGS.length;
+    const rightSide = turn % 2 === 1;
+    bubble.lang = lang;
+    bubble.textContent = greeting;
+    bubble.dataset.side = rightSide ? "right" : "left";
+    bubbleAnimation = bubble.animate?.([
+      { opacity: 0, transform: `translate(${rightSide ? -11 : 11}px, 8px) scale(.76)` },
+      { opacity: 1, transform: "translate(0, 0) scale(1)", offset: .16 },
+      { opacity: 1, transform: "translate(0, -3px) scale(1)", offset: .83 },
+      { opacity: 0, transform: "translate(0, -7px) scale(.99)" },
+    ], { duration: GREETING_MS, easing: "ease-out", fill: "both" });
+  }
+
   function update(now) {
     frame = 0;
     if (document.hidden) return;
@@ -103,6 +132,8 @@ export function createStudioMotion(player, readMouths) {
       stage.style.setProperty("--capy-scale", String(1 + progress * .06));
       shownProgress = progress;
     }
+
+    showGreeting(active && current === "idle" ? Math.floor((now - startedAt) / GREETING_MS) : -1);
 
     let mouth = null;
     if (active && current === "idle") {
@@ -140,6 +171,7 @@ export function createStudioMotion(player, readMouths) {
     if (hovering || reduced.matches) return;
     tapUntil = performance.now() + SCENE_DURATION;
     startedAt = null;
+    showGreeting(-1);
     schedule();
   });
   reduced.addEventListener("change", () => {
