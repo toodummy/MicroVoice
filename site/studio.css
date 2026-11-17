@@ -10,7 +10,7 @@
 }
 * { box-sizing: border-box }
 [hidden] { display: none !important }
-body { margin: 0; min-width: 280px }
+body { margin: 0; min-width: 280px; isolation: isolate }
 button, textarea, input, select { font: inherit; color: inherit }
 a { color: inherit }
 button, select, input[type="range"], .import { cursor: pointer }
@@ -93,21 +93,19 @@ footer span { margin: 0 5px }
 }
 .hero-jump:hover span { transform: translateY(3px); background: #3a2a1e }
 #script { scroll-margin-top: 94px }
+#voice-signal {
+  position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 58% 51%, #49291f91 0%, #211a1ba8 39%, transparent 76%),
+    repeating-linear-gradient(90deg, #be915611 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(0deg, #be915611 0 1px, transparent 1px 28px), #111319;
+}
 .voice-stage {
   position: relative; display: block; width: 100%; padding: 0;
-  min-height: clamp(298px, 37vw, 424px); isolation: isolate; overflow: hidden;
-  border: 1px solid #54442d; border-radius: 18px;
-  background:
-    radial-gradient(ellipse at 50% 53%, #52311f 0%, #251d1c 36%, transparent 73%),
-    repeating-linear-gradient(90deg, #3c363930 0 1px, transparent 1px 22px),
-    repeating-linear-gradient(0deg, #3c363930 0 1px, transparent 1px 22px), #14151c;
-  box-shadow: 0 20px 58px #07080b9e, inset 0 0 45px #05040985;
+  min-height: clamp(260px, 31vw, 365px);
+  background: none; border: 0; border-radius: 18px;
 }
-.voice-stage::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  box-shadow: inset 0 0 38px #08061170;
-}
-#voice-signal { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none }
 .capy {
   display: inline-block; aspect-ratio: 1; position: relative;
   background: url("capybara.png") no-repeat 0 0 / 100% 100%;
@@ -153,7 +151,7 @@ footer span { margin: 0 5px }
   .hero h1 { font-size: clamp(2.4rem, 8.8vw, 4.2rem); line-height: .98; margin-bottom: 10px }
   .hero h1 span { display: inline }
   .hero-jump { margin-top: 12px }
-  .voice-stage { min-height: 234px }
+  .voice-stage { min-height: 172px }
   #script { scroll-margin-top: 14px }
 }
 @media (prefers-reduced-motion: no-preference) {

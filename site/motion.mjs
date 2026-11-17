@@ -25,14 +25,14 @@ export function analyzeMouth(wav, frames, sampleRate) {
 }
 
 // The central trace is brightest. The outer traces have a smaller range.
-function drawSignal(ctx, width, height, progress) {
-  const travel = progress * 40;
-  const phase = 1.2 + travel * .17;
+function drawSignal(ctx, width, height, seconds) {
+  const travel = 22 * Math.sin(seconds * .43);
+  const phase = 1.2 + seconds * 1.55;
   const level = height * .12;
   ctx.clearRect(0, 0, width, height);
-  const gap = width > 390 ? 8 : 7;
+  const gap = Math.max(width > 390 ? 8 : 7, width / 185);
   const count = Math.floor(width / gap);
-  const middle = height * .52;
+  const middle = height * .47;
   for (let i = 1; i < count; i++) {
     const x = i * gap;
     const p = x / width;
@@ -41,11 +41,11 @@ function drawSignal(ctx, width, height, progress) {
     const y = middle + wave * envelope * level + travel * (p - .5);
 
     ctx.fillStyle = i % 5 === 0 ? "#eeb45d" : "#c88c49";
-    ctx.globalAlpha = i % 5 === 0 ? .85 : .55;
+    ctx.globalAlpha = i % 5 === 0 ? .67 : .40;
     ctx.fillRect(x, Math.round(y / 3) * 3, i % 5 === 0 ? 5 : 3, 3);
 
     ctx.fillStyle = "#e88c59";
-    ctx.globalAlpha = .28;
+    ctx.globalAlpha = .23;
     const echo = Math.sin(p * 19 - phase * .7) * level * .55;
     ctx.fillRect(x, middle - height * .19 + echo + travel * .24, 2, 2);
     ctx.fillRect(x, middle + height * .19 - echo - travel * .24, 2, 2);
@@ -60,7 +60,8 @@ export function createStudioMotion(player, readMouths) {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const captions = document.querySelectorAll(".capy:has(.mouth)");
   let working = false, visible = true, frame = 0, lastMouth;
-  let width = 0, height = 0, progress = 0, painted = -1, lastPaint = -Infinity;
+  let width = 0, height = 0, progress = 0, shownProgress = -1;
+  let backgroundDirty = true, lastPaint = -Infinity;
   let hovering = false, tapUntil = 0, startedAt = null;
 
   const isPlaying = () => !player.paused && !player.ended;
@@ -77,7 +78,7 @@ export function createStudioMotion(player, readMouths) {
       canvas.height = Math.round(height * scale);
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
     }
-    painted = -1;
+    backgroundDirty = true;
     schedule();
   }
   function update(now) {
@@ -92,12 +93,15 @@ export function createStudioMotion(player, readMouths) {
       startedAt = null;
       progress = reduced.matches || !visible || progress < .008 ? 0 : progress * .78;
     }
-    if (visible && progress !== painted && (progress === 0 || now - lastPaint >= 32)) {
-      if (ctx && width && height) drawSignal(ctx, width, height, progress);
+    if (ctx && width && height && (backgroundDirty || (!reduced.matches && now - lastPaint >= 32))) {
+      drawSignal(ctx, width, height, reduced.matches ? 0 : now / 1_000);
+      backgroundDirty = false;
+      lastPaint = now;
+    }
+    if (progress !== shownProgress) {
       stage.style.setProperty("--capy-y", `${-progress * 8}px`);
       stage.style.setProperty("--capy-scale", String(1 + progress * .06));
-      painted = progress;
-      lastPaint = now;
+      shownProgress = progress;
     }
 
     let mouth = null;
@@ -114,14 +118,14 @@ export function createStudioMotion(player, readMouths) {
       }
       lastMouth = mouth;
     }
-    if (!reduced.matches && (current !== "idle" || active || progress > 0)) schedule();
+    if (!reduced.matches && (ctx || current !== "idle" || active || progress > 0)) schedule();
   }
 
   function sync() {
     document.body.dataset.voiceState = state();
     schedule();
   }
-  new ResizeObserver(measure).observe(stage);
+  new ResizeObserver(measure).observe(canvas);
   stage.addEventListener("pointerenter", (event) => {
     if (event.pointerType !== "mouse") return;
     hovering = true;
@@ -138,7 +142,10 @@ export function createStudioMotion(player, readMouths) {
     startedAt = null;
     schedule();
   });
-  reduced.addEventListener("change", schedule);
+  reduced.addEventListener("change", () => {
+    backgroundDirty = true;
+    schedule();
+  });
   document.addEventListener("visibilitychange", schedule);
   for (const event of ["play", "pause", "ended", "emptied", "seeked"]) player.addEventListener(event, sync);
   new IntersectionObserver(([entry]) => {
