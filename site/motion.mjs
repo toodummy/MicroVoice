@@ -1,6 +1,6 @@
 const MOUTH_FPS = 25;
 const WAITING_MOUTHS = [0, 1, 3, 2, 2, 1, 0, 2, 3, 3, 1, 0, 0];
-const clamp = (x) => Math.max(0, Math.min(1, x));
+const SCENE_DURATION = 2_300;
 const ease = (x) => x * x * (3 - 2 * x);
 
 export function analyzeMouth(wav, frames, sampleRate) {
@@ -102,14 +102,14 @@ function drawSoundField(ctx, width, height, travel) {
 }
 
 export function createStudioMotion(player, readMouths) {
-  const story = document.getElementById("hero-story");
   const stage = document.getElementById("voice-stage");
   const canvas = document.getElementById("voice-signal");
   const ctx = canvas.getContext("2d");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const captions = document.querySelectorAll(".capy:has(.mouth)");
   let working = false, visible = true, frame = 0, lastMouth;
-  let width = 0, height = 0, progress = 0, target = 0, painted = -1;
+  let width = 0, height = 0, progress = 0, painted = -1, lastPaint = -Infinity;
+  let hovering = false, tapUntil = 0, startedAt = null;
 
   const isPlaying = () => !player.paused && !player.ended;
   const state = () => working ? "working" : isPlaying() ? "playing" : "idle";
@@ -126,32 +126,31 @@ export function createStudioMotion(player, readMouths) {
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
     }
     painted = -1;
-    readScroll();
-  }
-  function readScroll() {
-    const hero = story.firstElementChild;
-    const stickyTop = Number.parseFloat(getComputedStyle(hero).top) || 0;
-    target = reduced.matches ? 0 : clamp((stickyTop - story.getBoundingClientRect().top)
-      / Math.max(1, story.clientHeight - hero.clientHeight));
     schedule();
   }
   function update(now) {
     frame = 0;
     if (document.hidden) return;
     const current = state();
-    progress += (target - progress) * .20;
-    if (Math.abs(progress - target) < .002 || reduced.matches) progress = target;
-    if (visible && progress !== painted) {
+    const active = visible && !reduced.matches && (hovering || now < tapUntil);
+    if (active) {
+      startedAt ??= now;
+      progress = (1 - Math.cos((now - startedAt) / SCENE_DURATION * 2 * Math.PI)) / 2;
+    } else {
+      startedAt = null;
+      progress = reduced.matches || !visible || progress < .008 ? 0 : progress * .78;
+    }
+    if (visible && progress !== painted && (progress === 0 || now - lastPaint >= 32)) {
       if (ctx && width && height) drawSoundField(ctx, width, height, progress);
-      stage.style.setProperty("--capy-x", `${(progress * .09 - .04) * width}px`);
-      stage.style.setProperty("--capy-y", `${-progress * 36}px`);
-      stage.style.setProperty("--capy-scale", String(1 + progress * .16));
+      stage.style.setProperty("--capy-y", `${-progress * 8}px`);
+      stage.style.setProperty("--capy-scale", String(1 + progress * .06));
       painted = progress;
+      lastPaint = now;
     }
 
     let mouth = null;
-    if (visible && current === "idle" && progress > .30 && progress < .78) {
-      mouth = WAITING_MOUTHS[Math.floor((progress - .30) / .48 * WAITING_MOUTHS.length)];
+    if (active && current === "idle") {
+      mouth = WAITING_MOUTHS[Math.floor((now - startedAt) / 105) % WAITING_MOUTHS.length];
     }
     if (current === "working") mouth = WAITING_MOUTHS[Math.floor(now / 105) % WAITING_MOUTHS.length];
     if (current === "playing") mouth = readMouths()?.[Math.floor(player.currentTime * MOUTH_FPS)] ?? 0;
@@ -163,7 +162,7 @@ export function createStudioMotion(player, readMouths) {
       }
       lastMouth = mouth;
     }
-    if (!reduced.matches && (current !== "idle" || (visible && progress !== target))) schedule();
+    if (!reduced.matches && (current !== "idle" || active || progress > 0)) schedule();
   }
 
   function sync() {
@@ -171,8 +170,23 @@ export function createStudioMotion(player, readMouths) {
     schedule();
   }
   new ResizeObserver(measure).observe(stage);
-  window.addEventListener("scroll", readScroll, { passive: true });
-  reduced.addEventListener("change", readScroll);
+  stage.addEventListener("pointerenter", (event) => {
+    if (event.pointerType !== "mouse") return;
+    hovering = true;
+    schedule();
+  });
+  stage.addEventListener("pointerleave", (event) => {
+    if (event.pointerType !== "mouse") return;
+    hovering = false;
+    schedule();
+  });
+  stage.addEventListener("click", () => {
+    if (hovering || reduced.matches) return;
+    tapUntil = performance.now() + SCENE_DURATION;
+    startedAt = null;
+    schedule();
+  });
+  reduced.addEventListener("change", schedule);
   document.addEventListener("visibilitychange", schedule);
   for (const event of ["play", "pause", "ended", "emptied", "seeked"]) player.addEventListener(event, sync);
   new IntersectionObserver(([entry]) => {
