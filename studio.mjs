@@ -1,7 +1,7 @@
 import { generateAudio } from "./synthesis.mjs?v=3";
 import { detectLanguage } from "./detect-language.mjs";
 import { MAX_TEXT_LENGTH } from "./text-settings.mjs";
-import { createStudioMotion } from "./motion.mjs?v=2";
+import { analyzeMouth, createStudioMotion } from "./motion.mjs?v=3";
 
 const get = (id) => document.getElementById(id);
 const languages = await (async () => {
@@ -31,9 +31,10 @@ const player = get("player");
 const canvas = get("waveform");
 const download = get("save-wave");
 let peaks;
+let mouths;
 let audioURL;
 let inProgress = false;
-const motion = createStudioMotion(player, () => peaks);
+const motion = createStudioMotion(player, () => mouths);
 
 function setStatus(message, error = false) {
   get("status").textContent = message;
@@ -107,7 +108,8 @@ function parseWave(wav) {
     peaks[bucket] = Math.max(peaks[bucket], level);
   }
   const sampleRate = data.getUint32(24, true);
-  return { peaks, sampleRate, seconds: frames / sampleRate };
+  if (!sampleRate) throw new Error("The WAV sample rate is invalid.");
+  return { peaks, mouths: analyzeMouth(data, frames, sampleRate), sampleRate, seconds: frames / sampleRate };
 }
 
 form.addEventListener("submit", async (event) => {
@@ -131,9 +133,9 @@ form.addEventListener("submit", async (event) => {
     get("audio-info").textContent = `${audio.seconds.toFixed(1)} s of audio · ${elapsed.toFixed(1)} s to generate`;
     get("audio-format").textContent = `${audio.sampleRate / 1000} kHz · Mono`;
     peaks = audio.peaks;
+    mouths = audio.mouths;
     drawWave();
     setStatus("Audio ready.");
-    motion.ready();
   } catch (error) {
     setStatus(error.message || "Could not generate audio.", true);
   } finally {
