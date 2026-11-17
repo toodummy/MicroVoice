@@ -7,10 +7,11 @@
   <meta name="color-scheme" content="dark">
   <title>CapyVoice</title>
   <link rel="icon" type="image/png" href="capybara.png">
-  <link rel="stylesheet" href="studio.css?v=7">
-  <script type="module" src="studio.mjs?v=8"></script>
+  <link rel="stylesheet" href="studio.css?v=8">
+  <script type="module" src="studio.mjs?v=9"></script>
 </head>
 <body>
+  <canvas id="voice-signal" aria-hidden="true"></canvas>
   <header class="topbar">
     <a class="brand" href="./"><img class="brand-icon" src="capybara.png" width="38" height="38" alt=""> CapyVoice</a>
     <span class="local"><span aria-hidden="true"></span> Browser mode</span>
@@ -24,7 +25,6 @@
         <a class="hero-jump" href="#script">Start writing <span aria-hidden="true">↓</span></a>
       </div>
       <button class="voice-stage" id="voice-stage" type="button" aria-label="Play the CapyVoice animation">
-        <canvas id="voice-signal" aria-hidden="true"></canvas>
         <span class="capy stage-capy" aria-hidden="true"><span class="mouth"></span></span>
       </button>
     </div>
