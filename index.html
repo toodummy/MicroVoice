@@ -7,8 +7,8 @@
   <meta name="color-scheme" content="dark">
   <title>CapyVoice</title>
   <link rel="icon" type="image/png" href="capybara.png">
-  <link rel="stylesheet" href="studio.css?v=5">
-  <script type="module" src="studio.mjs?v=6"></script>
+  <link rel="stylesheet" href="studio.css?v=6">
+  <script type="module" src="studio.mjs?v=7"></script>
 </head>
 <body>
   <header class="topbar">
@@ -17,18 +17,16 @@
   </header>
 
   <main>
-    <div class="hero-story" id="hero-story">
-      <div class="heading hero">
-        <div class="hero-copy">
-          <h1>Text to <span>speech</span></h1>
-          <p>Generate speech in ten languages. Your text and audio stay on this device.</p>
-          <a class="hero-jump" href="#script">Start writing <span aria-hidden="true">↓</span></a>
-        </div>
-        <div class="voice-stage" id="voice-stage">
-          <canvas id="voice-signal" aria-hidden="true"></canvas>
-          <span class="capy stage-capy" aria-hidden="true"><span class="mouth"></span></span>
-        </div>
+    <div class="heading hero">
+      <div class="hero-copy">
+        <h1>Text to <span>speech</span></h1>
+        <p>Generate speech in ten languages. Your text and audio stay on this device.</p>
+        <a class="hero-jump" href="#script">Start writing <span aria-hidden="true">↓</span></a>
       </div>
+      <button class="voice-stage" id="voice-stage" type="button" aria-label="Play the CapyVoice animation">
+        <canvas id="voice-signal" aria-hidden="true"></canvas>
+        <span class="capy stage-capy" aria-hidden="true"><span class="mouth"></span></span>
+      </button>
     </div>
 
     <form id="studio" class="layout">
