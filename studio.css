@@ -96,8 +96,11 @@ footer span { margin: 0 5px }
 .voice-stage {
   position: relative; display: block; width: 100%; padding: 0;
   min-height: clamp(298px, 37vw, 424px); isolation: isolate; overflow: hidden;
-  border: 1px solid #624332; border-radius: 20px;
-  background: radial-gradient(ellipse at 52% 67%, #49231e, #211721 52%, #131219 83%);
+  border: 1px solid #54442d; border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 53%, #52311f 0%, #251d1c 36%, transparent 73%),
+    repeating-linear-gradient(90deg, #3c363930 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(0deg, #3c363930 0 1px, transparent 1px 22px), #14151c;
   box-shadow: 0 20px 58px #07080b9e, inset 0 0 45px #05040985;
 }
 .voice-stage::after {
@@ -111,8 +114,8 @@ footer span { margin: 0 5px }
   image-rendering: pixelated;
 }
 .stage-capy {
-  position: absolute; top: 17%; left: 50%; width: clamp(110px, 29%, 165px);
-  transform: translate(-50%, var(--capy-y, 0px)) scale(var(--capy-scale, 1));
+  position: absolute; top: 50%; left: 50%; width: clamp(110px, 29%, 165px);
+  transform: translate(-50%, calc(-50% + var(--capy-y, 0px))) scale(var(--capy-scale, 1));
   pointer-events: none;
   filter: drop-shadow(0 0 22px #fb9b4559) drop-shadow(0 9px 12px #241016b5);
 }
